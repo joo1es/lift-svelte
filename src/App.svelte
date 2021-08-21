@@ -1,0 +1,85 @@
+<script lang="ts">
+	import { Button } from "carbon-components-svelte"
+	import Init from './Init.svelte'
+	import Now from './Now.svelte'
+
+	import Login16 from "carbon-icons-svelte/lib/Login16";
+
+	let bornTime: Date | undefined
+	if (localStorage.getItem('Born')) {
+		bornTime = new Date(localStorage.getItem('Born'))
+	}
+
+    let nowTime = new Date()
+
+    setInterval(() => nowTime = new Date(), 4)
+
+	$: init = !bornTime as boolean
+
+	$: clearTime = () => {
+		bornTime = undefined
+		localStorage.removeItem('Born')
+	}
+
+	$: nowHours = nowTime.getHours()
+	$: isDay = nowHours >= 18 || nowHours < 6
+</script>
+
+<main style={`background-image: linear-gradient(to bottom, ${isDay ? '#353751, #222331' : 'rgb(15, 150, 258), rgb(38, 172, 232)'})`}>
+	<div class="sun" style={`left: ${Math.min(Math.max(nowHours / 24 * 100, 40), 60)}%`} />
+	<div class='step'>
+		<div style="color: #fff; font-size: 24px; margin-bottom: 15px">
+			{ nowTime.getHours().toString().padStart(2, '0') }:{ nowTime.getMinutes().toString().padStart(2, '0') }:{ nowTime.getSeconds().toString().padStart(2, '0') }
+		</div>
+		{#if init}
+			<Init bind:bornTime={bornTime}/>
+		{:else}
+			<Now bornTime={bornTime} nowTime={nowTime} />
+			<Button kind="secondary" on:click={clearTime} icon={Login16}>重新选择日期</Button>
+		{/if}
+	</div>
+</main>
+
+<style lang='scss'>
+    .sun {
+        position: fixed;
+        height: 100px;
+        width: 100px;
+        background-color: rgb(232, 184, 78);
+        top: 10vh;
+		left: 0;
+        border-radius: 50%;
+    }
+	main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100vh;
+		// background-image: url(/img/bg.jpg);
+		// background-size: cover;
+	}
+	.step {
+		// background-color: #ffffffc0;
+		// backdrop-filter: blur(10px);
+		// padding: 20px;
+		// border-radius: 5px;
+		width: 600px;
+		@media (max-width: 600px) {
+			padding: 0 10px;
+			width: 100%;
+		}
+		// box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+		:global(.bx--btn) {
+			margin-top: 20px;
+		}
+	}
+	:global(.box) {
+		background-color: #ffffff;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+		padding: 20px;
+		border-radius: 5px;
+		&:not(:first-child) {
+			margin-top: 20px;
+		}
+	}
+</style>
