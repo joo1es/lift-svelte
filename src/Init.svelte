@@ -3,7 +3,7 @@
 
     import { Button, DatePicker, DatePickerInput } from "carbon-components-svelte"
 
-    let defaultTime = '05/06/1999'
+    let defaultTime = '06/05/1999'
 
 	$: handleFinish = () => {
         bornTime = new Date(defaultTime)
