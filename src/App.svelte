@@ -1,20 +1,21 @@
 <script lang="ts">
 	import { Button } from "carbon-components-svelte"
+	import Login16 from "carbon-icons-svelte/lib/Login16"
+
+	import { onDestroy } from 'svelte'
+
 	import Init from './Init.svelte'
 	import Now from './Now.svelte'
-
-	import Login16 from "carbon-icons-svelte/lib/Login16";
 
 	let bornTime: Date | undefined
 	if (localStorage.getItem('Born')) {
 		bornTime = new Date(localStorage.getItem('Born'))
 	}
+	$: init = !bornTime as boolean
 
     let nowTime = new Date()
-
-    setInterval(() => nowTime = new Date(), 4)
-
-	$: init = !bornTime as boolean
+    const timeUpdater = setInterval(() => nowTime = new Date(), 4)
+	onDestroy(() => clearInterval(timeUpdater))
 
 	$: clearTime = () => {
 		bornTime = undefined
@@ -35,9 +36,9 @@
 			<span style="font-size: 14px">周{days[nowTime.getDay()]}</span>
 		</div>
 		{#if init}
-			<Init bind:bornTime={bornTime}/>
+			<Init bind:bornTime/>
 		{:else}
-			<Now bornTime={bornTime} nowTime={nowTime}>
+			<Now {bornTime} {nowTime}>
 				<Button kind="secondary" on:click={clearTime} icon={Login16}>重新选择日期</Button>
 			</Now>
 		{/if}
