@@ -83,6 +83,7 @@
 
     const addTodo = () => {
         todos.unshift({
+            description: '',
             inputing: true,
             finished: false,
             expiration: false
@@ -143,13 +144,14 @@
         {#each todos as todo}
             <div class={todo.finished ? 'finished box todo' : 'box todo'} on:dblclick={() => todo.inputing = !todo.inputing}>
                 <Checkbox labelText={todo.description || ''} bind:checked={todo.finished} on:change={() => {
+                    todo.inputing = false
                     if (!todo.finished) {
                         todo.expiration = new Date().getTime() + 86400000
                     } else {
                         todo.expiration = false
                     }
                 }}/>
-                {#if todo.inputing}
+                {#if todo.inputing && !todo.finished}
                     <TextArea bind:value={todo.description} />
                 {/if}
             </div>
