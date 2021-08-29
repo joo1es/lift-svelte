@@ -10,6 +10,7 @@
     } from "carbon-components-svelte"
 
     import Add16 from "carbon-icons-svelte/lib/Add16"
+    import Time16 from "carbon-icons-svelte/lib/Time16"
 
     $: nowTimeStamp = nowTime.getTime()
     
@@ -102,6 +103,27 @@
         })
         localStorage.setItem('todos', JSON.stringify(todos))
     }
+    
+    let dailyReport: string = ''
+
+    const getDailyReport = (): void => {
+        if (dailyReport) {
+            dailyReport = ''
+            return
+        }
+        const todays: string[] = []
+        const tomorrows: string[] = []
+        todos.forEach(todo => {
+            if (!todo.description) return
+            if (todo.finished) {
+                todays.push(`${todays.length + 1}. ${todo.description} 已完成`)
+            } else {
+                todays.push(`${todays.length + 1}. ${todo.description} 进行中`)
+                tomorrows.push(`${tomorrows.length + 1}. 完成 ${todo.description}`)
+            }
+        })
+        dailyReport = `今日日报\n${todays.join('\n') || '今日事今日毕。'}\n\n明日计划\n${tomorrows.join('\n') || '明日复明日，明日何其多。我生待明日，万事成蹉跎。'}`
+    }
 
 </script>
 
@@ -122,7 +144,7 @@
             </div>
         </div>
         {#if bornShow}
-            <div style="margin-top: 10px; color: #fff; font-size: 14px; line-height: 28px; text-align: center;">
+            <div class="title">
                 曾几何时,开始细数生辰
             </div>
             <div class="box">
@@ -141,6 +163,19 @@
                 </div>
             </div>
         {/if}
+        {#if dailyReport}
+            <div class="title">
+                日报
+            </div>
+            <div class="box" style="padding: 0;">
+                <TextArea value={dailyReport} rows={10} />
+            </div>
+        {/if}
+        {#if todos.length > 0}
+            <div class="title">
+                待办
+            </div>
+        {/if}
         {#each todos as todo}
             <div class={todo.finished ? 'finished box todo' : 'box todo'} on:dblclick={() => todo.inputing = !todo.inputing}>
                 <Checkbox labelText={todo.description || ''} bind:checked={todo.finished} on:change={() => {
@@ -157,11 +192,11 @@
             </div>
         {/each}
     </div>
-    <Button kind="danger" on:click={() => bornShow = !bornShow}>生辰</Button> <Button kind="danger" on:click={addTodo} icon={Add16}>待办</Button> <slot/>
+    <Button kind="danger" on:click={() => bornShow = !bornShow}>生辰</Button> <Button kind="danger" on:click={addTodo} icon={Add16}>待办</Button> <Button on:click={getDailyReport} icon={Time16}>日报</Button> <slot/>
 </div>
 
 <style lang="scss">
-    ::-webkit-scrollbar {
+    :global(::-webkit-scrollbar) {
         display: none; /* Chrome Safari */
     }
     .year {
@@ -172,10 +207,18 @@
             overflow: auto;
             scrollbar-width: none;
         }
+        .title {
+            margin-top: 10px;
+            color: #fff;
+            font-size: 14px;
+            line-height: 28px;
+            text-align: center;
+        }
         // font-weight: bold;
         .box {
             text-align: center;
             font-size: 14px;
+            overflow: hidden;
             > span {
                 font-size: 22px;
             }
