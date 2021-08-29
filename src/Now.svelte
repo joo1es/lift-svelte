@@ -4,8 +4,12 @@
 
     import {
         Button,
-        TimePicker
+        TimePicker,
+        Checkbox,
+        TextArea
     } from "carbon-components-svelte"
+
+    import Add16 from "carbon-icons-svelte/lib/Add16"
 
     $: nowTimeStamp = nowTime.getTime()
     
@@ -57,56 +61,142 @@
         }
     }
 
+    interface todo {
+        description?: string,
+        finished: boolean,
+        inputing: boolean,
+        expiration: number | boolean
+    }
+
+    let getTodo = localStorage.getItem('todos')
+    let defaultTodo = []
+    if (getTodo) {
+        defaultTodo = JSON.parse(getTodo)
+        if (Array.isArray(defaultTodo)) {
+            defaultTodo = defaultTodo.filter(todo => {
+                return !todo.expiration || todo.expiration > nowTime.getTime()
+            })
+        }
+    }
+
+    let todos: todo[] = defaultTodo
+
+    const addTodo = () => {
+        todos.push({
+            inputing: true,
+            finished: false,
+            expiration: false
+        })
+        todos = [...todos]
+    }
+
+    $: {
+        localStorage.setItem('todos', JSON.stringify(todos))
+    }
+
 </script>
 
 <div class="year">
-    <div class="box">
-        <div class="year-down">
-            <div class="year-down-now">
-                今日
-                <TimePicker bind:value={startTime} size="xl" placeholder="hh:mm"></TimePicker>
-                上班，距离 {offWorkTime} {computedSeconds > 0 ? '还剩' : '已经过去'}
-            </div>
-            <div class="year-down-how">
-                {leaveTimeSeconds} <span class="year-down-minutes">秒</span><br>
-                {leaveTimeMinutes} <span class="year-down-minutes">分钟</span><br>
-                {leaveTimeHours} <span class="year-down-minutes">小时</span>
-            </div>
-        </div>
-    </div>
-    {#if bornShow}
-        <div style="margin-top: 10px; color: #fff; font-size: 14px; line-height: 28px; text-align: center;">
-            曾几何时,开始细数生辰
-        </div>
-        <div class="box">
-            你已经 <span>{currentAge}</span> 岁了
-        </div>
+    <div class="year-content">
         <div class="box">
             <div class="year-down">
                 <div class="year-down-now">
-                    你存在
+                    今日
+                    <TimePicker bind:value={startTime} size="xl" placeholder="hh:mm"></TimePicker>
+                    上班，距离 {offWorkTime} {computedSeconds > 0 ? '还剩' : '已经过去'}
                 </div>
                 <div class="year-down-how">
-                    {currentDay} <span class="year-down-minutes">天</span><br>
-                    {currentHour} <span class="year-down-minutes">小时</span><br>
-                    {currentMinute} <span class="year-down-minutes">分钟</span>
+                    {leaveTimeSeconds} <span class="year-down-minutes">秒</span><br>
+                    {leaveTimeMinutes} <span class="year-down-minutes">分钟</span><br>
+                    {leaveTimeHours} <span class="year-down-minutes">小时</span>
                 </div>
             </div>
         </div>
-    {/if}
-    <Button kind="danger" on:click={() => bornShow = !bornShow}>生辰</Button> <slot/>
+        {#if bornShow}
+            <div style="margin-top: 10px; color: #fff; font-size: 14px; line-height: 28px; text-align: center;">
+                曾几何时,开始细数生辰
+            </div>
+            <div class="box">
+                你已经 <span>{currentAge}</span> 岁了
+            </div>
+            <div class="box">
+                <div class="year-down">
+                    <div class="year-down-now">
+                        你存在
+                    </div>
+                    <div class="year-down-how">
+                        {currentDay} <span class="year-down-minutes">天</span><br>
+                        {currentHour} <span class="year-down-minutes">小时</span><br>
+                        {currentMinute} <span class="year-down-minutes">分钟</span>
+                    </div>
+                </div>
+            </div>
+        {/if}
+        {#each todos as todo}
+            <div class={todo.finished ? 'finished box todo' : 'box todo'} on:dblclick={() => todo.inputing = !todo.inputing}>
+                <Checkbox labelText={todo.description || ''} bind:checked={todo.finished} on:change={() => {
+                    if (!todo.finished) {
+                        todo.expiration = new Date().getTime() + 86400000
+                    } else {
+                        todo.expiration = false
+                    }
+                }}/>
+                {#if todo.inputing}
+                    <TextArea bind:value={todo.description} />
+                {/if}
+            </div>
+        {/each}
+    </div>
+    <Button kind="danger" on:click={() => bornShow = !bornShow}>生辰</Button> <Button kind="danger" on:click={addTodo} icon={Add16}>待办</Button> <slot/>
 </div>
 
 <style lang="scss">
+    ::-webkit-scrollbar {
+        display: none; /* Chrome Safari */
+    }
     .year {
         line-height: 40px;
         font-size: 22px;
+        &-content {
+            max-height: calc(100vh - 400px);
+            overflow: auto;
+            scrollbar-width: none;
+        }
         // font-weight: bold;
         .box {
             text-align: center;
             font-size: 14px;
             > span {
                 font-size: 22px;
+            }
+            &.todo {
+                text-align: left;
+                padding: 10px;
+                :global(.bx--text-area__wrapper){
+                    width: calc(100% + 20px);
+                    margin-bottom: -10px;
+                    margin-left: -10px;
+                    margin-right: -10px;
+                    margin-top: 5px;
+                }
+                :global(.bx--checkbox-label-text){
+                    line-height: 1.3em;
+                }
+                // :global(.bx--form-item){
+                //     .bx--checkbox:checked {
+                //         + .bx--checkbox-label {
+                //             text-decoration: overline;
+                //         }
+                //     }
+                // }
+            }
+            &.finished {
+                :global(.bx--checkbox-wrapper){
+                    opacity: .3;
+                }
+                :global(.bx--checkbox-label-text){
+                    text-decoration: line-through;
+                }
             }
         }
         &-down {

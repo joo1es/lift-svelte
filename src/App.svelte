@@ -46,6 +46,9 @@
 </main>
 
 <style lang='scss'>
+	:global(body) {
+		overflow: hidden;
+	}
     .sun {
         position: fixed;
         height: 100px;
