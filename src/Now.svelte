@@ -82,7 +82,7 @@
     let todos: todo[] = defaultTodo
 
     const addTodo = () => {
-        todos.push({
+        todos.unshift({
             inputing: true,
             finished: false,
             expiration: false
@@ -91,6 +91,14 @@
     }
 
     $: {
+        todos.sort((a, b) => {
+            if (a.finished === b.finished) return 0
+            if (a.finished) return 1
+            if (b.finished) return -1
+        })
+        todos = todos.filter(todo => {
+            return !todo.finished || todo.description
+        })
         localStorage.setItem('todos', JSON.stringify(todos))
     }
 
