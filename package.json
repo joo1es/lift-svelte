@@ -6,7 +6,8 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear --host",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "deploy": "rollup -c && node --loader ts-node/esm gh-pages.ts"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
@@ -28,7 +29,9 @@
     "typescript": "^4.0.0"
   },
   "dependencies": {
+    "gh-pages": "^5.0.0",
     "node-sass": "^6.0.1",
-    "sirv-cli": "^1.0.0"
+    "sirv-cli": "^1.0.0",
+    "ts-node": "^10.9.1"
   }
 }
